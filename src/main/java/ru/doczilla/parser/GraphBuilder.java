@@ -5,6 +5,6 @@ import ru.doczilla.graph.Graph;
 
 import java.io.IOException;
 
-public interface GraphParser<T> {
-    Graph<T> applyTo(T base) throws IOException;
+public interface GraphBuilder<T> {
+    Graph<T> build() throws IOException;
 }

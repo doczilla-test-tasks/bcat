@@ -2,10 +2,13 @@ package ru.doczilla.cli;
 
 
 import com.beust.jcommander.*;
-import ru.doczilla.parser.FileGraphParser;
+import ru.doczilla.graph.algorithm.FindCyclesAlgorithm;
+import ru.doczilla.parser.FileGraphBuilder;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 @Parameters(separators = "=")
@@ -19,6 +22,8 @@ public class Cli {
     )
     private Path basePath;
 
+    //TODO: add parameter to choose between name list and concatenated content output
+
     public static void main(String[] args) {
         try {
             var cli = new Cli();
@@ -27,7 +32,18 @@ public class Cli {
                     .build()
                     .parse(args);
 
-            var fileGraph = new FileGraphParser().applyTo(cli.basePath);
+            var fileGraph = new FileGraphBuilder(cli.basePath).build();
+            List<List<Path>> cycles = new FindCyclesAlgorithm<>(fileGraph).findAllCycles();
+
+            if (!cycles.isEmpty()) {
+                System.out.println("Invalid input. Cyclic requirements:");
+                AtomicInteger idx = new AtomicInteger(1);
+                cycles.forEach(nodeList -> {
+                    System.out.printf("Cycle #%d:\n", idx.getAndIncrement());
+                    nodeList.forEach(node -> System.out.println("\t" + node));
+                });
+            }
+
         } catch (ParameterException e) {
             System.out.println(e.getMessage());
             e.usage();
