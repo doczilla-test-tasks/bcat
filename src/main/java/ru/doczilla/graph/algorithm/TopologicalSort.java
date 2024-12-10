@@ -4,16 +4,24 @@ import ru.doczilla.graph.Graph;
 
 import java.util.*;
 
-public class TopologicalSort<T> {
+public class TopologicalSort<T extends Comparable<? super T>> {
 
     private final Graph<T> graph;
     private final Set<T> used;
-    private final Map<Integer, List<T>> order;
 
-    public TopologicalSort(Graph<T> graph) {
+    private final Map<Integer, List<T>> order;
+    private final Comparator<T> comparator;
+
+    public TopologicalSort(Graph<T> graph, Comparator<T> comparator) {
         this.graph = graph;
         this.used = new HashSet<>();
+
         this.order = new HashMap<>();
+        this.comparator = comparator;
+    }
+
+    public TopologicalSort(Graph<T> graph) {
+        this(graph, Comparator.naturalOrder());
     }
 
     private void dfs(T vertex) {
@@ -29,8 +37,8 @@ public class TopologicalSort<T> {
         order.get(sz).add(vertex);
     }
 
-    public List<T> getSortedVertices(Comparator<T> comparator) {
-        Set<T> vertices = graph.getAlLVertices();
+    public List<T> getSortedVertices() {
+        Set<T> vertices = graph.vertexSet();
         for (T vertex : vertices) {
             if (!used.contains(vertex))
                 dfs(vertex);
@@ -42,8 +50,10 @@ public class TopologicalSort<T> {
                 i <= order.keySet().stream().max(Comparator.naturalOrder()).get();
                 ++i
         ) {
-            order.get(i).sort(comparator);
-            res.addAll(order.get(i));
+            if (order.containsKey(i)) {
+                order.get(i).sort(comparator);
+                res.addAll(order.get(i));
+            }
         }
 
         return res;

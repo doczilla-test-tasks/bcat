@@ -1,7 +1,6 @@
 package ru.doczilla.graph.algorithm;
 
 import ru.doczilla.graph.Graph;
-import ru.doczilla.graph.SimpleGraph;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,7 +8,13 @@ import java.util.stream.Stream;
 
 public class FindCyclesAlgorithm<T> {
 
-    private final Graph<T>      graph;
+    enum Color {
+        WHITE,
+        GREY,
+        BLACK
+    }
+
+    private final Graph<T> graph;
     private final Map<T, Color> colors;
 
     public FindCyclesAlgorithm(Graph<T> graph) {
@@ -38,7 +43,7 @@ public class FindCyclesAlgorithm<T> {
     }
 
     public List<List<T>> findAllCycles() {
-        Set<T> vertices = graph.getAlLVertices();
+        Set<T> vertices = graph.vertexSet();
         vertices.forEach(v -> colors.put(v, Color.WHITE));
         List<List<T>> res = new LinkedList<>();
         while (!vertices.isEmpty()) {

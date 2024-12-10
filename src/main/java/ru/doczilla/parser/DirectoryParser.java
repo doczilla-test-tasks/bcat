@@ -1,12 +1,15 @@
 package ru.doczilla.parser;
 
 import ru.doczilla.graph.Graph;
-import ru.doczilla.graph.SimpleGraph;
+import ru.doczilla.graph.GraphBuilder;
+import ru.doczilla.graph.SimpleDirectedGraph;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -14,22 +17,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-public class FileGraphBuilder implements GraphBuilder<Path> {
-
-    //TODO: create special enum with such patterns to be sure that "path" capture group is present
-    private static final String SIMPLE_UNIX_PATH_PATTERN_STR =
-            "(?<=;|^)\\s*require\\s+['\"`](?<path>/?(?:[^/'\"]*/)*[^/'\"]+)['\"`]\\s*;(?=\\s*)";
+public class DirectoryParser implements GraphParser<Path> {
 
     private final Path basePath;
     private final Pattern pathPattern;
+    private final Graph<Path> graph;
 
-    public FileGraphBuilder(Path basepath, Pattern pattern) {
+    public DirectoryParser(Path basepath, Pattern pattern) {
         this.basePath = basepath;
         this.pathPattern = pattern;
+
+        var filePaths = getFilePaths(this.basePath);
+        var graphBuilder = new SimpleDirectedGraph
+                .SimpleDirectedGraphBuilder<Path>()
+                .withVertices(filePaths);
+        filePaths.forEach(p -> graphBuilder.withEdges(List.of(p), getFileDependencies(p)));
+        this.graph = graphBuilder.build();
     }
 
-    public FileGraphBuilder(Path basePath) {
-        this(basePath, Pattern.compile(SIMPLE_UNIX_PATH_PATTERN_STR));
+    public DirectoryParser(Path basePath) {
+        this(basePath, PathPattern.SIMPLE_UNIX_PATH_PATTERN_STR.value());
     }
 
     private List<Path> getFilePaths(Path p) {
@@ -41,8 +48,7 @@ public class FileGraphBuilder implements GraphBuilder<Path> {
                     return Stream.of(path.toAbsolutePath().normalize());
             }).toList();
         } catch (IOException e) {
-            //TODO: create specific exception
-            throw new RuntimeException(e);
+            throw new RuntimeException("Something occurred during directory '" + p + "' parsing.", e);
         }
     }
 
@@ -58,7 +64,7 @@ public class FileGraphBuilder implements GraphBuilder<Path> {
             while (matcher.find()) {
                 Path relationPath = Path.of(basePath.toString(), matcher.group("path")).toAbsolutePath().normalize();
                 if (!Files.exists(relationPath)) {
-                    throw new RuntimeException();
+                    throw new RuntimeException("File '" + relationPath + "' does not exist");
                 }
 
                 res.add(relationPath);
@@ -66,22 +72,17 @@ public class FileGraphBuilder implements GraphBuilder<Path> {
 
             return res;
         } catch (IOException e) {
-            //TODO: create specific exception
-            throw new RuntimeException(e);
+            throw new RuntimeException("Something occurred during file '" + p + "' reading", e);
         }
     }
 
     @Override
-    public Graph<Path> build() throws IOException {
-        Graph<Path> graph = new SimpleGraph<>();
-        var filePaths = getFilePaths(this.basePath);
+    public void updateGraph() {
+        throw new RuntimeException("Not implemented");
+    }
 
-        graph.addAllVertices(filePaths);
-        filePaths.forEach(p -> {
-            List<Path> dependencies = getFileDependencies(p);
-            graph.addAllEdges(p, dependencies);
-        });
-
-        return graph;
+    @Override
+    public Graph<Path> getGraph() {
+        return this.graph;
     }
 }

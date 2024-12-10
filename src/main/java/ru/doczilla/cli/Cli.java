@@ -4,13 +4,9 @@ package ru.doczilla.cli;
 import com.beust.jcommander.*;
 import ru.doczilla.graph.algorithm.FindCyclesAlgorithm;
 import ru.doczilla.graph.algorithm.TopologicalSort;
-import ru.doczilla.parser.FileGraphBuilder;
+import ru.doczilla.parser.DirectoryParser;
 
-import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -36,7 +32,7 @@ public class Cli {
                     .build()
                     .parse(args);
 
-            var fileGraph = new FileGraphBuilder(cli.basePath).build();
+            var fileGraph = new DirectoryParser(cli.basePath).getGraph();
             List<List<Path>> cycles = new FindCyclesAlgorithm<>(fileGraph).findAllCycles();
 
             if (!cycles.isEmpty()) {
@@ -49,16 +45,20 @@ public class Cli {
                 System.exit(1);
             }
 
-            //TODO: apply topological sort on fileGraph
-            var topologicallySortedVertices = new TopologicalSort<>(fileGraph).getSortedVertices(Comparator.naturalOrder());
-            topologicallySortedVertices.forEach(System.out::println);
-            //TODO: properly print results
+            var topologicalSortAlgorithm = new TopologicalSort<>(fileGraph);
+            topologicalSortAlgorithm.getSortedVertices().forEach(System.out::println);
+
+            //TODO: make output variable (related to output mods)
 
         } catch (ParameterException e) {
             System.out.println(e.getMessage());
             e.usage();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (SecurityException e) {
+            System.out.println(e.getMessage());
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            if (e.getCause() != null)
+                System.out.println(e.getCause().getMessage());
         }
     }
 }

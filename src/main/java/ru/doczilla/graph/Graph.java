@@ -1,80 +1,16 @@
 package ru.doczilla.graph;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.Set;
 
-public abstract class Graph<T> {
+public interface Graph<T> {
+    void addVertex(T v);
+    void addVertices(Collection<T> vertices);
 
-    private final Map<T, List<T>> relations;
+    Set<T> vertexSet();
 
-    public Graph(Map<T, List<T>> relationMap) {
-        this.relations = relationMap;
-    }
+    void addEdge(T v1, T v2);
+    void addEdges(Collection<T> vc1, Collection<T> vc2);
 
-    public Graph(Graph<T> otherGraph) {
-        //TODO: think more about copying relations HashMap
-        this.relations = otherGraph.relations;
-    }
-
-    public Graph() {
-        this(new HashMap<>());
-    }
-
-    public Map<T, List<T>> getRelations() {
-        return relations;
-    }
-
-    public void addVertex(T vertex) {
-        relations.put(vertex, new LinkedList<>());
-    }
-
-    public void addAllVertices(Collection<T> vertexCollection) {
-        vertexCollection.forEach(this::addVertex);
-    }
-
-    public Set<T> getAlLVertices() {
-        return new HashSet<>(relations.keySet());
-    }
-
-    public void addEdge(T v1, T v2) {
-        //TODO: create specific Exception
-        if (!relations.containsKey(v1))
-            throw new RuntimeException("Vertex " + v1 + " does not exist");
-
-        if (!relations.containsKey(v2))
-            throw new RuntimeException("Vertex " + v2 + " does not exist");
-
-        relations.get(v1).add(v2);
-        relations.get(v2).add(v1);
-    }
-
-    public void addAllEdges(T v, Collection<T> relatedVertices) {
-        if (!relations.containsKey(v))
-            throw new RuntimeException("Vertex " + v + " does not exist");
-
-        relations.get(v).addAll(relatedVertices);
-    }
-
-    public List<T> getAllReachableVertices(T source) {
-        if (!relations.containsKey(source))
-            throw new RuntimeException("Vertex " + source + " does not exist");
-        return new LinkedList<>(relations.get(source));
-    }
-
-    public Graph<T> invert() {
-        Map<T, List<T>> invertedRelations = new HashMap<>();
-        for (T key : relations.keySet()) {
-            Set<T> nodeSetCopy = getAlLVertices();
-            relations.get(key).forEach(nodeSetCopy::remove);
-            invertedRelations.put(key, new ArrayList<>(nodeSetCopy));
-        }
-        return new SimpleGraph<>(invertedRelations);
-    }
-
-    @Override
-    public String toString() {
-        return "Graph {" +
-                "\trelations=" + relations + ";\n" +
-                '}';
-    }
+    Set<T> getAllReachableVertices(T src);
 }
