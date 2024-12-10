@@ -1,15 +1,12 @@
 package ru.doczilla.parser;
 
 import ru.doczilla.graph.Graph;
-import ru.doczilla.graph.GraphBuilder;
 import ru.doczilla.graph.SimpleDirectedGraph;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
