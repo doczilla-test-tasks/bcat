@@ -50,8 +50,7 @@ public class FileGraphBuilder implements GraphBuilder<Path> {
         try (BufferedReader br = Files.newBufferedReader(p)) {
             Optional<String> fileContentOptional = br.lines().reduce((s1, s2) -> s1 + "\n" + s2);
             if (fileContentOptional.isEmpty())
-                //TODO: create specific exception
-                throw new RuntimeException();
+                return new LinkedList<>();
             String fileContent = fileContentOptional.get();
 
             Matcher matcher = pathPattern.matcher(fileContent);

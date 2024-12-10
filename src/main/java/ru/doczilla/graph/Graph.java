@@ -61,6 +61,16 @@ public abstract class Graph<T> {
         return new LinkedList<>(relations.get(source));
     }
 
+    public Graph<T> invert() {
+        Map<T, List<T>> invertedRelations = new HashMap<>();
+        for (T key : relations.keySet()) {
+            Set<T> nodeSetCopy = getAlLVertices();
+            relations.get(key).forEach(nodeSetCopy::remove);
+            invertedRelations.put(key, new ArrayList<>(nodeSetCopy));
+        }
+        return new SimpleGraph<>(invertedRelations);
+    }
+
     @Override
     public String toString() {
         return "Graph {" +

@@ -3,10 +3,14 @@ package ru.doczilla.cli;
 
 import com.beust.jcommander.*;
 import ru.doczilla.graph.algorithm.FindCyclesAlgorithm;
+import ru.doczilla.graph.algorithm.TopologicalSort;
 import ru.doczilla.parser.FileGraphBuilder;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -42,7 +46,13 @@ public class Cli {
                     System.out.printf("Cycle #%d:\n", idx.getAndIncrement());
                     nodeList.forEach(node -> System.out.println("\t" + node));
                 });
+                System.exit(1);
             }
+
+            //TODO: apply topological sort on fileGraph
+            var topologicallySortedVertices = new TopologicalSort<>(fileGraph).getSortedVertices(Comparator.naturalOrder());
+            topologicallySortedVertices.forEach(System.out::println);
+            //TODO: properly print results
 
         } catch (ParameterException e) {
             System.out.println(e.getMessage());

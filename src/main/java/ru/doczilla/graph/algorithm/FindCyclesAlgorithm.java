@@ -1,6 +1,7 @@
 package ru.doczilla.graph.algorithm;
 
 import ru.doczilla.graph.Graph;
+import ru.doczilla.graph.SimpleGraph;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,16 +11,15 @@ public class FindCyclesAlgorithm<T> {
 
     private final Graph<T>      graph;
     private final Map<T, Color> colors;
-//    private final Stack<T>      stack;
 
     public FindCyclesAlgorithm(Graph<T> graph) {
         this.graph = graph;
         this.colors = new HashMap<>();
-//        this.stack = new Stack<>();
     }
 
     private List<T> dfs(T vertex) {
         try {
+
             colors.put(vertex, Color.GREY);
             return graph.getAllReachableVertices(vertex)
                     .stream().flatMap(v -> {
@@ -42,11 +42,14 @@ public class FindCyclesAlgorithm<T> {
         vertices.forEach(v -> colors.put(v, Color.WHITE));
         List<List<T>> res = new LinkedList<>();
         while (!vertices.isEmpty()) {
-            Iterator<T> iter = vertices.iterator();
-            List<T> dfsRes = dfs(iter.next());
-            if (dfsRes.size() > 1)
+            T currentVertex = vertices.iterator().next();
+            List<T> dfsRes = dfs(currentVertex);
+            if (dfsRes.size() > 1) {
                 res.add(dfsRes.reversed());
-            vertices.removeAll(new HashSet<>(dfsRes));
+                vertices.removeAll(new HashSet<>(dfsRes));
+            } else {
+                vertices.remove(currentVertex);
+            }
         }
         return res;
     }
